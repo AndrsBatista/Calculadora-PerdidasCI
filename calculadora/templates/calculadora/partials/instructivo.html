@@ -1,0 +1,40 @@
+<div class="modal fade" id="modalInstructivo" tabindex="-1" aria-labelledby="modalInstructivoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header" style="background: #2B6CB0; color: white;">
+        <h5 class="modal-title" id="modalInstructivoLabel">Acerca de la Calculadora de Pérdidas</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+         <div class="mb-4">
+          <h5>1. Requisitos del Archivo</h5>
+          <p>• Formato CSV exportado desde el datalogger
+          <br>• Asegurarse que el/los archivo(s) estén en <strong>Inglés</strong>.
+          <br>• Debe contener las columnas: Hora, Potencia (kW), Irradiancia (W/m²).</p>
+          <h5>2. Preparación</h5>
+          <p>• El archivo debe contener la data completa del día. En caso de tener registros faltantes, estos serán excluidos del cálculo.
+          <br>• Se pueden cargar múltiples archivos para analizar varios días.</p>
+          <h5>3. Carga de Archivos</h5>
+          <p>• Arrastrar los archivos al área de carga o hacer clic para seleccionarlos.
+          <br>• Para quitar un archivo, hacer clic en el botón de eliminación (X) que aparece junto a él.</p>
+          <h5>4. Resultados</h5>
+          <p>• El resumen muestra todos los lapsos con pérdidas detectadas ordenados por fecha.
+          <br>• Debajo del resumen se muestran los detalles de cada pérdida detectada, separados por días.</p>
+          <h5>5. Exportación</h5>
+          <p>• El resumen puede ser copiado presionando el botón ubicado en la esquina superior derecha de este.
+          <br>• Los resultados pueden ser exportados en formato Excel.</p>
+
+          <h6>NOTA:</h6>
+          <p>Esta aplicación trabaja empleando una fórmula matemática estricta, por lo cual se contemplarán todas las pérdidas que se encuentren dentro de los archivos, <strong>incluyendo pérdidas por sombras, las cuales no se toman en cuenta al momento de generar el resumen de pérdidas realizado por Soventix Caribbean</strong>. Se recomienda revisar el resumen detallado para identificar las pérdidas por sombras y no sumarlas al resumen general.</p>
+          </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
