@@ -113,7 +113,7 @@ def calcular_perdidas(df: pd.DataFrame) -> tuple[pd.DataFrame, float, float]:
     # Umbral dinámico: 10% de la generación esperada por intervalo típico
     irradiancia_promedio = df.loc[mask_irr, 'Irradiancia'].mean()
     umbral_dinamico = round(
-        promedio_inicial * irradiancia_promedio * factor_t * 0.10, 4
+        promedio_inicial * irradiancia_promedio * factor_t * 0.20, 4
     )
     # Seguridad: nunca menor a 0.01 kWh para evitar falsos positivos extremos
     umbral_dinamico = max(umbral_dinamico, 0.01)
@@ -176,15 +176,16 @@ def agrupar_lapsos(df: pd.DataFrame, umbral_dinamico: float) -> pd.DataFrame:
     return lapsos[lapsos['Perdida_Total_kWh'] >= umbral_dinamico].reset_index(drop=True)
 
 
-def generar_excel(registros: list[dict]) -> bytes:
-    wb  = openpyxl.Workbook()
-    ws  = wb.active
+def generar_excel(registros: list[dict], nombre_planta: str = '') -> bytes:
+    wb = openpyxl.Workbook()
+    ws = wb.active
     ws.title = 'Resumen de Pérdidas'
 
     fill_header = PatternFill('solid', fgColor='2B6CB0')
     fill_fila   = PatternFill('solid', fgColor='FEE2E2')
     fill_total  = PatternFill('solid', fgColor='E2E8F0')
     font_header = Font(bold=True, color='FFFFFF', size=11)
+    font_titulo = Font(bold=True, size=13)
     font_normal = Font(size=10)
     font_total  = Font(bold=True, size=11)
     centro      = Alignment(horizontal='center', vertical='center')
@@ -196,23 +197,32 @@ def generar_excel(registros: list[dict]) -> bytes:
         cell.alignment = centro
         return cell
 
+    fila_inicio = 1
+
+    # Título con nombre de la planta
+    if nombre_planta:
+        ws.merge_cells('A1:D1')
+        c(1, 1, f'Planta: {nombre_planta}', font=font_titulo)
+        fila_inicio = 3
+
     headers = ['Fecha', 'Hora Inicio', 'Hora Fin', 'Pérdida (kWh)']
     for col, h in enumerate(headers, start=1):
-        c(1, col, h, font=font_header, fill=fill_header)
+        c(fila_inicio, col, h, font=font_header, fill=fill_header)
 
-    for fila, reg in enumerate(registros, start=2):
+    fila = fila_inicio + 1
+    for reg in registros:
         c(fila, 1, reg['fecha'])
         c(fila, 2, reg['hora_inicio'])
         c(fila, 3, reg['hora_fin'])
         c(fila, 4, reg['perdida_total_kWh'], fill=fill_fila)
+        fila += 1
 
-    fila_total = len(registros) + 2
-    ws.merge_cells(f'A{fila_total}:D{fila_total}')
-    c(fila_total, 1, 'PÉRDIDA TOTAL', font=font_total, fill=fill_total)
+    ws.merge_cells(f'A{fila}:C{fila}')
+    c(fila, 1, 'PÉRDIDA TOTAL', font=font_total, fill=fill_total)
     total = round(sum(r['perdida_total_kWh'] for r in registros), 2)
-    c(fila_total, 5, total, font=font_total, fill=fill_total)
+    c(fila, 4, total, font=font_total, fill=fill_total)
 
-    for col, ancho in zip('ABCDE', [14, 28, 14, 14, 16]):
+    for col, ancho in zip('ABCD', [14, 14, 14, 16]):
         ws.column_dimensions[col].width = ancho
 
     buffer = io.BytesIO()

@@ -29,7 +29,15 @@
 
   <form method="post" enctype="multipart/form-data" id="upload-form">
     {% csrf_token %}
-
+    <div class="mb-3">
+      <label for ="nombre-planta" class="form-label">Nombre de la planta</label>
+      <input type="text"
+             class="form-control"
+             id="nombre-planta"
+             name="nombre_planta"
+             placeholder="Ej: Khoury Industrial" 
+             required>
+    </div>
     <div id="drop-zone"
          style="border: 2px dashed #2B6CB0; border-radius: 12px; padding: 60px 20px;
                 text-align: center; cursor: pointer; background: #f0f6ff; transition: background 0.2s;">
@@ -164,12 +172,18 @@
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
+
+    const nombrePlanta = document.getElementById('nombre-planta').value.trim();
+    if (!nombrePlanta) {
+      mostrarAviso('Por favor, ingresa el nombre de la planta.', 'danger');
+      return;
+    }
+
     if (!archivosAcumulados.length) return;
 
     document.getElementById('btn-texto').textContent = 'Procesando...';
     document.getElementById('btn-spinner').style.display = 'inline-block';
     submitBtn.disabled = true;
-
     const formData = new FormData(form);
     archivosAcumulados.forEach(f => formData.append('archivos_csv', f));
 

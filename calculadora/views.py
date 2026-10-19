@@ -15,6 +15,12 @@ def _sort_key(fecha_str):
 def upload_view(request):
     if request.method == 'POST':
         archivos = request.FILES.getlist('archivos_csv')
+        nombre_planta = request.POST.get('nombre_planta', '').strip()
+
+        if not nombre_planta:
+            return render(request, 'calculadora/upload.html', {
+                'error': 'Por favor, ingresa el nombre de la planta.'
+            })
 
         if not archivos:
             return render(request, 'calculadora/upload.html', {
@@ -33,12 +39,14 @@ def upload_view(request):
 
         # Regenerar Excel con registros en el mismo orden
         registros_ordenados = sorted(resultado['registros_excel'], key=lambda r: _sort_key(r['fecha']))
-        excel_bytes_ordenado = generar_excel(registros_ordenados) if registros_ordenados else None
+        excel_bytes_ordenado = generar_excel(registros_ordenados, nombre_planta) if registros_ordenados else None
 
         if excel_bytes_ordenado:
             request.session['excel_b64'] = base64.b64encode(excel_bytes_ordenado).decode('utf-8')
+            request.session['nombre_planta'] = nombre_planta
         else:
             request.session.pop('excel_b64', None)
+            request.session.pop('nombre_planta', None)
 
         dias_con_perdidas = sum(1 for r in resultados_ordenados if not r['sin_perdidas'])
         dias_sin_perdidas = sum(1 for r in resultados_ordenados if r['sin_perdidas'])
@@ -51,13 +59,15 @@ def upload_view(request):
             'hay_excel':          excel_bytes_ordenado is not None,
             'dias_con_perdidas':  dias_con_perdidas,
             'dias_sin_perdidas':  dias_sin_perdidas,
+            'nombre_planta':      nombre_planta
         })
         
     return render(request, 'calculadora/upload.html')
 
 
 def descargar_excel(request):
-    excel_b64 = request.session.get('excel_b64')
+    excel_b64     = request.session.get('excel_b64')
+    nombre_planta = request.session.get('nombre_planta', 'Reporte')
 
     if not excel_b64:
         return HttpResponse('No hay Excel disponible. Procesa los archivos primero.', status=404)
@@ -67,5 +77,6 @@ def descargar_excel(request):
         excel_bytes,
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
-    response['Content-Disposition'] = 'attachment; filename="Reporte_Perdidas.xlsx"'
+    nombre_archivo = f"Reporte_Perdidas_{nombre_planta.replace(' ', '_')}.xlsx"
+    response['Content-Disposition'] = f'attachment; filename="{nombre_archivo}"'
     return response
